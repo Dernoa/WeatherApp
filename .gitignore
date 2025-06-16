@@ -40,3 +40,4 @@ app-example
 .vscode/
 /.idea/
 README.md
+.env
