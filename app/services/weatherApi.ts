@@ -1,7 +1,7 @@
 import { WeatherData } from '../types/weatherDataTypes';
 import axios from 'axios';
 
-// Указывайте адрес вашего backend-сервера:
+// Backend-Server, you can change it to your own server address:
 const BASE_URL = 'http://192.168.1.8:3001/weather';
 
 export const fetchWeather = async (city: string): Promise<WeatherData> => {

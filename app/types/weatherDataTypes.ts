@@ -1,5 +1,5 @@
 export interface WeatherData {
-  name: string; // название города
+  name: string; 
   main: {
     temp: number;
     feels_like: number;
