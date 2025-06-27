@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, TextInput, Button } from 'react-native';
 import { fetchWeather } from './services/weatherApi';
+import { detectCity } from './services/cityDetectApi';
 import type { WeatherData } from './types/weatherDataTypes';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Location from 'expo-location';
 
 export default function Index() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -11,15 +13,38 @@ export default function Index() {
   const [city, setCity] = useState('');
 
   useEffect(() => {
-    fetchWeather('Minsk')
-      .then(data => {
-        setWeather(data);
+    const getLocation = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setError('Permission to access location was denied');
+          setLoading(false);
+          return;
+        }
+        const location = await Location.getCurrentPositionAsync({});
+        const lat = location.coords.latitude;
+        const lng = location.coords.longitude;
+
+        // Получаем город по координатам
+        const detectedCity = await detectCity(lat, lng);
+        console.log('Detected city:', detectedCity.city);
+        setCity(detectedCity.city); // Заполняем поле ввода найденным городом
+
+        fetchWeather(detectedCity.city)
+          .then(data => {
+            setWeather(data);
+            setLoading(false);
+          })
+          .catch(err => {
+            setError(err.message);
+            setLoading(false);
+          });
+      } catch (err) {
+        setError('Failed to get location: ' + (err instanceof Error ? err.message : String(err)));
         setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
+      }
+    };
+    getLocation();
   }, []);
 
   const handleSearch = () => {
